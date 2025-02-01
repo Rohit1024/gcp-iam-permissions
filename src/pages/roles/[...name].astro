@@ -1,0 +1,156 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+type Role = CollectionEntry<"roles">;
+
+type Props = {
+  name: string;
+  role: Role;
+};
+
+export async function getStaticPaths() {
+  const roles = await getCollection("roles");
+  return roles.map((role) => ({
+    params: { name: role.id },
+    props: { role: role },
+  }));
+}
+
+const { role } = Astro.props;
+---
+
+<Layout title={`Role : ${role.data.name}`}>
+  <main class="flex-1 container mx-auto px-4 py-8">
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        {
+          role ? (
+            <>
+              <h1 class="card-title text-2xl flex items-center gap-2">
+                <span id="role-id" class="font-mono">
+                  {role.data.name}
+                </span>
+                <button
+                  class="btn btn-sm btn-ghost"
+                  onclick="copyRole()"
+                  aria-label="Copy Role"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"
+                    />
+                  </svg>
+                </button>
+              </h1>
+
+              <div class="divider -my-1" />
+
+              <div class="space-y-4">
+                <div class="grid grid-cols-[auto_1fr] gap-2">
+                  <p class="font-semibold">Title:</p>
+                  <p class="text-base-content/80">{role.data.title}</p>
+                </div>
+                <div class="grid grid-cols-[auto_1fr] gap-2">
+                  <p class="font-semibold">Description:</p>
+                  <p class="text-base-content/80">{role.data.description}</p>
+                </div>
+                <div class="grid grid-cols-[auto_1fr] gap-2">
+                  <p class="font-semibold">Stage:</p>
+                  <div class="badge badge-neutral">{role.data.stage}</div>
+                </div>
+              </div>
+
+              <div class="divider -my-1" />
+
+              <h2 class="text-xl font-semibold">
+                {role.data.included_permissions.length} Assigned Permissions :
+              </h2>
+
+              <div class="form-control w-full max-w-md my-2">
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="permissionFilter"
+                    placeholder="Filter permissions..."
+                    class="input input-bordered w-full pr-10"
+                  />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <ul id="permissionsList" class="bg-base-200 rounded-box p-2">
+                {role.data.included_permissions.map((permission) => (
+                  <li
+                    class="permission-item my-1"
+                    data-permission={permission.toLowerCase()}
+                  >
+                    <a
+                      href={`/permissions/${permission}`}
+                      class="link link-primary hover:active font-mono"
+                    >
+                      {permission}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>Role not found.</p>
+          )
+        }
+      </div>
+    </section>
+  </main>
+  <script is:inline>
+    function copyRole() {
+      const roleName = document.getElementById("role-id").innerText;
+      navigator.clipboard
+        .writeText(roleName)
+        .then(() => {
+          alert("Role name copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Failed to copy role name: ", err);
+        });
+    }
+
+    // Permission filtering
+    const permissionFilter = document.getElementById("permissionFilter");
+    const permissionItems = document.getElementsByClassName("permission-item");
+
+    permissionFilter?.addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+
+      Array.from(permissionItems).forEach((item) => {
+        const permission = item.getAttribute("data-permission") || "";
+        const isVisible = permission.includes(searchTerm);
+        item.style.display = isVisible ? "block" : "none";
+      });
+    });
+  </script>
+</Layout>

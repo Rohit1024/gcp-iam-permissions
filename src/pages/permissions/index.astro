@@ -1,0 +1,99 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const roles = await getCollection("roles");
+const uniquePermissions = new Set<string>();
+
+// Collect all unique permissions
+roles.forEach((role) => {
+  role.data.included_permissions.forEach((permission) => {
+    uniquePermissions.add(permission);
+  });
+});
+
+// Convert to array and sort
+const permissions = Array.from(uniquePermissions).sort();
+---
+
+<Layout title="IAM | Permissions">
+  <main class="flex-1 container mx-auto px-4 py-8">
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h1 class="card-title text-2xl mb-6">
+          All GCP Permissions {" "} - <span class="text-2xl"
+            >{permissions.length}</span
+          >
+        </h1>
+
+        <div class="form-control w-full max-w-md mb-4">
+          <div class="relative">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search for specific permissions..."
+              class="input input-bordered w-full pr-10"
+            />
+            <span
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <ul id="permissionsList" class="bg-base-200 rounded-box p-2">
+          {
+            permissions.map((permission) => (
+              <li
+                class="permission-item flex justify-between my-1"
+                data-permission={permission.toLowerCase()}
+              >
+                <a
+                  href={`/permissions/${permission}`}
+                  class="font-mono link link-primary"
+                >
+                  {permission}
+                </a>
+                <span class="badge badge-neutral">
+                  {
+                    roles.filter((role) =>
+                      role.data.included_permissions.includes(permission)
+                    ).length
+                  }{" "}
+                  roles
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </main>
+  <script is:inline>
+    const searchInput = document.getElementById("searchInput");
+    const permissionItems = document.getElementsByClassName("permission-item");
+
+    searchInput?.addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+
+      Array.from(permissionItems).forEach((item) => {
+        const permission = item.getAttribute("data-permission") || "";
+        const isVisible = permission.includes(searchTerm);
+        item.style.display = isVisible ? "" : "none";
+      });
+    });
+  </script>
+</Layout>

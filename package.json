@@ -1,14 +1,23 @@
 {
   "name": "gcp-iam-permissions",
-  "type": "module",
   "version": "0.0.1",
+  "dependencies": {
+    "@astrojs/node": "^9.0.2",
+    "@tailwindcss/vite": "^4.0.1",
+    "astro": "^5.2.1",
+    "googleapis": "^144.0.0",
+    "tailwindcss": "^4.0.1"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "generate": "bun run generate.ts --crawl",
+    "start": "HOST=0.0.0.0 node ./dist/server/entry.mjs"
   },
-  "dependencies": {
-    "astro": "^5.2.1"
+  "type": "module",
+  "devDependencies": {
+    "daisyui": "^5.0.0-beta.6"
   }
 }

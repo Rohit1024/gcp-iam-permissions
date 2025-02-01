@@ -1,0 +1,81 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const roles = await getCollection("roles");
+---
+
+<Layout title="IAM | Roles">
+  <main class="flex-1 container mx-auto px-4 py-8">
+    <section class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h1 class="card-title text-2xl mb-6">
+          All GCP IAM Roles {" "} - <span class="text-2xl">{roles.length}</span>
+        </h1>
+
+        <div class="form-control w-full max-w-md mb-4">
+          <div class="relative">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search for roles or titles..."
+              class="input input-bordered w-full pr-10"
+            />
+            <span
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <ul id="rolesList" class="bg-base-200 rounded-box p-2">
+          {
+            roles.map((role) => (
+              <li
+                class="role-item flex justify-between my-1"
+                data-name={role.data.name.toLowerCase()}
+                data-title={role.data.title.toLowerCase()}
+              >
+                <a
+                  href={`/roles/${role.id}`}
+                  class="font-mono link link-primary"
+                >
+                  {role.data.name}
+                </a>
+                <h4 class="font-semibold">{role.data.title}</h4>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </main>
+  <script is:inline>
+    const searchInput = document.getElementById("searchInput");
+    const roleItems = document.getElementsByClassName("role-item");
+
+    searchInput?.addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+
+      Array.from(roleItems).forEach((item) => {
+        const name = item.getAttribute("data-name") || "";
+        const title = item.getAttribute("data-title") || "";
+        const isVisible =
+          name.includes(searchTerm) || title.includes(searchTerm);
+        item.style.display = isVisible ? "" : "none";
+      });
+    });
+  </script>
+</Layout>

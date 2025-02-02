@@ -96,7 +96,7 @@ const { permission, roles } = Astro.props;
                 data-role={role.data.name.toLowerCase()}
               >
                 <a
-                  href={`/roles/${role.data.name}`}
+                  href={`${role.data.name}`}
                   class="link link-primary hover:active font-mono"
                 >
                   {role.data.name}
